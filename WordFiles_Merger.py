@@ -16,14 +16,14 @@
 ####### Modules importation #######
 ###################################
 
+# Standard library
 from os import walk, path
-
 from sys import platform
 from sys import exit
-
 from Tkinter import Tk
 from tkFileDialog import askdirectory
 
+# External library
 from win32com.client import *
 
 ###################################
@@ -33,7 +33,8 @@ from win32com.client import *
 def listword(foldpath, prefix = '*'):
     u""" List Word files included in the folder and its subfolders """
     global wordfiles
-    extensions = ['.doc', '.docx']
+    extensions = ['.doc', '.docx']  # Word files extensions
+    # Looping the folders structure
     for root, dirs, files in walk(target):
         for f in files:
             if path.splitext(f)[1] in extensions and prefix in f:
@@ -44,7 +45,7 @@ def listword(foldpath, prefix = '*'):
     # End of function
     return wordfiles
 
-def mergeword(iterword, dest):
+def mergeword(iterword, dest, output):
     u""" create a new Word file (.doc/.docx) merging all others Word files
     contained into the iterable parameter (list or tuple) """
     # Initializing Word application
@@ -55,7 +56,6 @@ def mergeword(iterword, dest):
     # Looping and merging
     for f in iterword:
         rng = finaldoc.Range()
-        rng.Paragraphs.Add()
         rng.Collapse(0)
         rng.InsertFile(f)
         rng.Paragraphs.Add()
@@ -64,14 +64,16 @@ def mergeword(iterword, dest):
         del rng
     # Page numbers
     sec = finaldoc.Sections.Item(1)
-    bdp = finaldoc.Footers.Item(1)
+    bdp = sec.Footers.Item(1)
     bdp.PageNumbers.Add()
     # saving
-    finaldoc.SaveAs(path.join(dest, 'WordsFiles_Joined.doc'), FileFormat=0)
+    finaldoc.SaveAs(path.join(dest, output + '.doc'), FileFormat=0)
     # Trying to convert into newer version of Office
     try:
+        """ Office newer than 2003 is installed """
         finaldoc.Convert()
     except:
+        """ Just Office 2003 """
         None
     # clean up
     finaldoc.Close()
@@ -83,9 +85,7 @@ def mergeword(iterword, dest):
 ######## Global variables #########
 ###################################
 
-wordfiles = []
-
-
+wordfiles = []  # list of Word files
 
 ###################################
 ########## Main program ###########
@@ -93,7 +93,7 @@ wordfiles = []
 
 # Check if it's running on windows system
 if platform != 'win32':
-	print u"Sorry, it's only working for Windows operating systeme !"
+	print u"Sorry, it's only working for Windows operating system!"
 	exit()
 
 # Ask for the "folder-target"
@@ -105,11 +105,15 @@ if target == "":          # if operation cancelled, stop the machine
     root.destroy()
     exit()
 
-# Ask for prefix filter
+# Ask for prefix filter and name of output file
 prefix = raw_input("Prefix for filter Word files: ")
+outname = raw_input("Name of output file: ")
 
 # List Word files contained
 listword(target, prefix)
 
 # Merge all files
-mergeword(wordfiles, target)
+mergeword(wordfiles, target, outname)
+
+# Closing
+exit()
