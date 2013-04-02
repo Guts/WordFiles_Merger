@@ -3,12 +3,12 @@
 #-------------------------------------------------------------------------------
 # Name :       Word Joiner
 # Purpose :    Generate a Word file compiling all word files present in folder
-#				and subfolders according to a filter
+#				and subfolders according to a prefix filter.
 # Authors :    Julien M.
 # Python :     2.7.x
 # Encoding:    utf-8
 # Created :    14/03/2013
-# Updated :    23/03/2013
+# Updated :    01/04/2013
 # Version :    0.1
 #-------------------------------------------------------------------------------
 
@@ -55,7 +55,6 @@ def mergeword(iterword, dest):
     # Looping and merging
     for f in iterword:
         rng = finaldoc.Range()
-##        rng.InsertBreak()
         rng.Paragraphs.Add()
         rng.Collapse(0)
         rng.InsertFile(f)
@@ -63,6 +62,10 @@ def mergeword(iterword, dest):
         rng.Collapse(0)
         rng.InsertBreak()
         del rng
+    # Page numbers
+    sec = finaldoc.Sections.Item(1)
+    bdp = finaldoc.Footers.Item(1)
+    bdp.PageNumbers.Add()
     # saving
     finaldoc.SaveAs(path.join(dest, 'WordsFiles_Joined.doc'), FileFormat=0)
     # Trying to convert into newer version of Office
